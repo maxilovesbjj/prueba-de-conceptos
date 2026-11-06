@@ -1,0 +1,3 @@
+## Fase 1: Análisis de Requerimientos y Negocio
+* **Uso de IA:** Discusión y análisis crítico del testimonio de Rosa. Desgranamos el contexto del negocio (canales de ingesta ruidosos como WhatsApp, merma de productos frescos, falta de ruteo logístico y riesgo de crédito B2B).
+* **Resultado:** Esto permitió formular las 5 preguntas estratégicas y sus supuestos, enfocándonos en la trazabilidad, orden operativo y prevención de fraude corporativo, antes de tirar cualquier línea de código.
