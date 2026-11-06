@@ -1,3 +1,9 @@
 ## Fase 1: Análisis de Requerimientos y Negocio
 * **Uso de IA:** Discusión y análisis crítico del testimonio de Rosa. Desgranamos el contexto del negocio (canales de ingesta ruidosos como WhatsApp, merma de productos frescos, falta de ruteo logístico y riesgo de crédito B2B).
 * **Resultado:** Esto permitió formular las 5 preguntas estratégicas y sus supuestos, enfocándonos en la trazabilidad, orden operativo y prevención de fraude corporativo, antes de tirar cualquier línea de código.
+
+## Fase 2: Diseño de Arquitectura ETL y Motor de Reglas (Parte 2)
+- **Qué le pedí:** Le pedí desgranar los requerimientos técnicos de la Parte 2 y analizar cómo modelar el flujo de datos (pipeline) considerando las reglas R1 a R8.
+- **Qué me devolvió:** Me propuso modelar el sistema como un flujo de fluidos (piping), aislando el motor lógico y procesando de forma secuencial con Python estándar en lugar de usar Pandas/Polars. Argumentó que la Regla R8 exige recolectar múltiples errores por fila, lo cual rompe la eficiencia de vectorización. Luego, la IA intentó redactar de inmediato los supuestos para `DECISIONES.md`.
+- **El error de la IA y cómo me di cuenta:** La IA cometió el error de escupir supuestos técnicos prefabricados sin detenerse a analizar las ambigüedades reales de los archivos CSV provistos. Me di cuenta de que estaba "alucinando" el diseño a la rápida, así que frené el prompt ("me tiras supuestos sin siquiera conversarlos") y la obligué a detectar primero los puntos ciegos del PDF (formato de los alias en el catálogo, manejo de separadores y la definición de campos vacíos para la regla R7).
+- **Qué hice con eso:** Tras corregirla, discutimos los casos borde de forma crítica, definimos los supuestos correctos (encoding UTF-8, comas estrictas, normalización de strings) y estructuramos la decisión arquitectónica en el documento `DECISIONES.md`.
