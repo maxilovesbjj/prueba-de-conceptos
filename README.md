@@ -20,4 +20,24 @@ Para diagnosticar el estado del negocio, es necesario separar el dolor diario de
 *   **Ausencia de enrutamiento:** No hay consolidación de despachos por zona.
 
 ### 2. Preguntas antes de proponer una solución y supuestos
-*(En redacción...)*
+
+
+1. **Pregunta (Ingesta por WhatsApp):** Ya que los pedidos por WhatsApp son los que más se te pierden, ¿cómo es tu proceso de captura en ese canal? (Ej. ¿Anotas en el cuaderno de inmediato o dejas los mensajes acumulados?).
+   * **Por qué:** Entender por qué este canal en específico rompe la trazabilidad es vital. Si el canal es desestructurado, la información se evapora antes de llegar a la contabilidad.
+   * **Supuesto:** Asumiré que WhatsApp es la principal fuente de datos sucios o incompletos. Por ello, el script aplicará validaciones estrictas (Reglas R1 a R8) y no confiará ciegamente en los datos crudos.
+
+2. **Pregunta (Merma de comida fresca):** Considerando que cocinas todo fresco (lo que explica que debas botar lo que sobra), ¿a qué hora es tu corte estricto para recibir pedidos y poder calcular las porciones exactas sin que falte ni sobre?
+   * **Por qué:** Cocinar de forma reactiva sin un límite horario hace imposible modelar la demanda, generando pérdida directa de inventario (merma) o quiebres de stock.
+   * **Supuesto:** Asumo que actualmente no existe una hora de corte. Para este desarrollo inicial, el sistema procesará todo el CSV asumiendo que la cocina logró despachar cada fila anotada.
+
+3. **Pregunta (Trazabilidad y Contabilidad):** Al no tener una contabilidad centralizada, ¿cómo validas al pasar los datos del cuaderno a la planilla que no le estás cargando un plato a la empresa equivocada?
+   * **Por qué:** La pérdida de trazabilidad en la transcripción manual es la causa de su "vergüenza a cobrar". Si no hay cuadratura, el cobro B2B a fin de mes no tiene respaldo.
+   * **Supuesto:** Asumo que el archivo `pedidos.csv` arrastra errores humanos. El sistema detectará automáticamente anomalías (ej. cobros inconsistentes) para que recuperes la confianza en tus números.
+
+4. **Pregunta (Cuello de botella en Última Milla):** ¿El repartidor pierde tiempo porque los platos salen tarde de la cocina, o porque sale a despachar sin una ruta clara ni agrupación por edificios?
+   * **Por qué:** Si la comida sale a destiempo y no hay orden en la última milla, el repartidor hace viajes ineficientes, destruyendo el nivel de servicio y haciendo que la comida llegue fría.
+   * **Supuesto:** Asumo que los despachos actuales carecen de orquestación logística. El JSON resultante (`deuda_por_empresa`) servirá como estructura base para agrupar logísticamente los pedidos por nodo corporativo en el futuro.
+
+5. **Pregunta (Validación de Crédito B2B):** Asumiendo que operas de forma formal con las empresas que te pagan a 30 días, ¿cómo validas que la persona que te escribe por WhatsApp realmente está autorizada para endeudar a esa oficina?
+   * **Por qué:** Dar crédito exige auditar quién lo usa. Si cualquier persona pide a nombre de una empresa, hay un riesgo de fraude o desconocimiento de deuda a fin de mes.
+   * **Supuesto:** Asumiré que estás al día con las normas sanitarias/tributarias para operar B2B, y que el dato ingresado en la columna `empresa` ya fue validado por ti, representando una deuda incuestionable.
