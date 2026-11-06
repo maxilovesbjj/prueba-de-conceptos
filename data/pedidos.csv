@@ -1,0 +1,17 @@
+fecha, cliente, empresa, canal, plato, cantidad, precio_unitario, pagado
+2026-11-02, Carla M., Constructora Sur, WhatsApp, Pastel de choclo, 2, 6500, no
+2026-11-02, Jorge P., Constructora Sur, WhatsApp, Cazuela, 1, 5500, no
+2026-11-02, Ana R.,, Instagram, Lasaña, 1, 6000, si
+2026-11-02, Luis T., Estudio Contable Paz, WhatsApp, pastel choclo, 3,6500, no
+2026-11-03, Carla M., Constructora Sur, WhatsApp, Cazuela, 2, 5500, no
+2026-11-03, Ana R.,, Instagram, Lasaña, 1, 6000, si
+2026-11-03, Ana R.,, Instagram, Lasaña, 1, 6000, si
+2026-11-03, Pedro S., Estudio Contable Paz, WhatsApp, Ensalada César,, 5000, no
+2026-11-04, Luis T., Estudio Contable Paz, WhatsApp, Pastel de Choclo, 2,6500, no
+2026-11-04, Marta G., Clínica Dental Sonríe, Teléfono, Cazuela, 4, 5500, si
+2026-11-04, Jorge P., Constructora Sur, WhatsApp, Lasaña, 1,6000,
+2026-11-05, Carla M., Constructora Sur, WhatsApp, Pastel de choclo, 2,6000, no
+2026-11-05, Marta G., Clínica Dental Sonríe, Teléfono, Ensalada César, 3,5000, si
+2026-11-06, Luis T., Estudio Contable Paz, WhatsApp, Cazuela, 2, 5500, no
+2026-11-06, Ana R.,, Instagram, Lasaña, 2, 6000, si
+2026-11-08, Jorge P., Constructora Sur, WhatsApp, Cazuela, 1, 5500, no
