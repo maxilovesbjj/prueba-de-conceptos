@@ -54,3 +54,15 @@ La sugerencia de crear una "app" fracasa porque asume un enfoque transaccional (
 
 3. **Digitalizar el desorden destruye la calidad:**
    Una aplicación no soluciona la merma diaria de alimentos ni las demoras logísticas en la última milla si el negocio sigue recibiendo pedidos sin un horario de corte estricto. Implementar software sobre un proceso sin reglas solo digitaliza el caos, somete a la cocina a estrés reactivo y termina mermando la calidad del producto final.
+
+**Propuesta para las primeras 2 semanas (MVP de bajo costo y baja fricción tecnológica):**
+Considerando que Rosa tiene presupuesto limitado y nula experiencia tecnológica, el entregable de las primeras dos semanas no será un nuevo software que deba aprender a usar, sino una **estructura de trazabilidad operativa** apoyada en herramientas gratuitas que ella ya conoce. El plan se divide en tres entregables:
+
+1. **Trazabilidad de Ingesta (Orden en el canal principal):** 
+   Migración de su WhatsApp personal a WhatsApp Business (costo $0). Se configurarán respuestas automáticas y un mensaje de bienvenida que exija un formato estricto al oficinista (Ej: "Nombre, Empresa, Plato, Cantidad"). Esto elimina el ruido de los audios y estructura el dato desde el origen.
+
+2. **Trazabilidad de Producción (Control de Merma):** 
+   Establecimiento de un "Acuerdo de Nivel de Servicio" (SLA) con sus clientes: una **hora de corte estricta** (ej. 11:00 AM). Pasada esa hora, no se reciben pedidos. Esto le permitirá contabilizar el total exacto antes de encender los quemadores, eliminando la sobreproducción (merma) y asegurando que la comida salga a tiempo para el ruteo del repartidor.
+
+3. **Trazabilidad Financiera (El script ETL):** 
+   Entrega del programa CLI desarrollado en esta prueba. Rosa seguirá usando su cuaderno y su planilla habitual sin fricción. Al final del día, el script procesará la planilla, filtrará los errores humanos de digitación y le entregará un reporte limpio y automatizado de la deuda B2B, eliminando su inseguridad al cobrar.
