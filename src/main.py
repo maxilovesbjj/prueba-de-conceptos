@@ -26,19 +26,16 @@ def cargar_catalogo(ruta_catalogo):
     catalogo = {}
     try:
         with open(ruta_catalogo, mode='r', encoding='utf-8') as archivo:
-            # Asumimos separador por coma
-            lector = csv.DictReader(archivo, delimiter=',')
+            # skipinitialspace=True limpia los espacios en los encabezados y valores
+            lector = csv.DictReader(archivo, delimiter=',', skipinitialspace=True)
+            
             for fila in lector:
-                # Obtenemos el nombre oficial, limpio
                 nombre_oficial = fila.get('plato', '').strip()
                 if not nombre_oficial:
-                    continue # Saltamos filas vacías si las hay
+                    continue 
                 
-                # Guardamos el plato con su nombre oficial
-                # Usamos minúsculas para la llave de búsqueda
                 llave_busqueda = nombre_oficial.lower()
                 
-                # Asumimos que el precio puede no ser un número válido en el catálogo
                 try:
                     precio = int(fila.get('precio', 0))
                 except ValueError:
@@ -49,10 +46,8 @@ def cargar_catalogo(ruta_catalogo):
                     'precio': precio
                 }
                 
-                # Procesamos el alias si existe
                 alias_crudo = fila.get('alias', '')
                 if alias_crudo:
-                    # R1: Guardamos el alias limpio apuntando al mismo plato
                     alias_limpio = alias_crudo.strip().lower()
                     if alias_limpio:
                         catalogo[alias_limpio] = {
