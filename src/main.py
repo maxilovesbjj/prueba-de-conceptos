@@ -3,79 +3,188 @@ import argparse
 import logging
 from pathlib import Path
 import csv
+import json
 
-# Configuración del logger
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(levelname)s: %(message)s"
-)
+# --- INYECCIÓN DE RUTA RAÍZ ---
+raiz_proyecto = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(raiz_proyecto))
+
+from src.rules import validar_cantidad, validar_fecha, evaluar_pago
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 def validar_archivos(rutas):
-    """Valida la existencia de los archivos críticos."""
+    """Verifica existencia de archivos (Criterio: terminar distinto de 0)."""
     for ruta in rutas:
         if not ruta.is_file():
-            logger.error(f"El archivo '{ruta}' no existe o no es accesible.")
+            logger.error(f"Error crítico: El archivo '{ruta}' no existe o no es accesible.")
             sys.exit(1)
 
 def cargar_catalogo(ruta_catalogo):
     """
-    Carga el catálogo en un diccionario para búsquedas O(1).
-    Regla R1: Limpia strings (minúsculas, sin espacios al inicio/final).
+    R1: Carga catálogo limpiando strings y manejando espacios iniciales.
+    Devuelve diccionario con acceso O(1).
     """
     catalogo = {}
     try:
         with open(ruta_catalogo, mode='r', encoding='utf-8') as archivo:
-            # skipinitialspace=True limpia los espacios en los encabezados y valores
             lector = csv.DictReader(archivo, delimiter=',', skipinitialspace=True)
-            
             for fila in lector:
                 nombre_oficial = fila.get('plato', '').strip()
-                if not nombre_oficial:
-                    continue 
+                if not nombre_oficial: continue 
                 
                 llave_busqueda = nombre_oficial.lower()
+                try: precio = int(fila.get('precio', 0))
+                except ValueError: precio = 0
                 
-                try:
-                    precio = int(fila.get('precio', 0))
-                except ValueError:
-                    precio = 0
-                
-                catalogo[llave_busqueda] = {
-                    'nombre_oficial': nombre_oficial,
-                    'precio': precio
-                }
+                catalogo[llave_busqueda] = {'nombre_oficial': nombre_oficial, 'precio': precio}
                 
                 alias_crudo = fila.get('alias', '')
                 if alias_crudo:
                     alias_limpio = alias_crudo.strip().lower()
                     if alias_limpio:
-                        catalogo[alias_limpio] = {
-                            'nombre_oficial': nombre_oficial,
-                            'precio': precio
-                        }
+                        catalogo[alias_limpio] = {'nombre_oficial': nombre_oficial, 'precio': precio}
         return catalogo
     except Exception as e:
         logger.error(f"Error al leer el catálogo '{ruta_catalogo}': {e}")
         sys.exit(1)
 
+def procesar_pedidos(ruta_pedidos, catalogo):
+    """
+    Pipeline secuencial que evalúa R2-R8 acumulando errores.
+    Calcula resúmenes, ventas diarias, platos y deuda.
+    """
+    resumen = {"filas_leidas": 0, "filas_validas": 0, "filas_rechazadas": 0, "total_vendido": 0}
+    ventas_dict = {}
+    platos_dict = {}
+    deuda_dict = {}
+    rechazos = []
+    alertas = []
+    filas_vistas = set() 
+    
+    try:
+        with open(ruta_pedidos, mode='r', encoding='utf-8') as archivo:
+            lector = csv.DictReader(archivo, delimiter=',', skipinitialspace=True)
+            
+            columnas_esperadas = {'fecha', 'cliente', 'empresa', 'canal', 'plato', 'cantidad', 'precio_unitario', 'pagado'}
+            if not columnas_esperadas.issubset(set(lector.fieldnames or [])):
+                logger.error("Error crítico: Al archivo pedidos.csv le faltan columnas obligatorias.")
+                sys.exit(1)
+                
+            for num_linea, fila in enumerate(lector, start=2):
+                resumen["filas_leidas"] += 1
+                errores_fila = []
+                
+                # R5: Duplicados exactos
+                fila_str = str(fila)
+                if fila_str in filas_vistas:
+                    alertas.append({"linea": num_linea, "tipo": "POSIBLE_DUPLICADO"})
+                filas_vistas.add(fila_str)
+                
+                # R1: Validar Plato
+                plato_crudo = fila.get('plato', '').strip().lower()
+                precio_oficial = 0
+                nombre_oficial = ""
+                if plato_crudo in catalogo:
+                    precio_oficial = catalogo[plato_crudo]['precio']
+                    nombre_oficial = catalogo[plato_crudo]['nombre_oficial']
+                else:
+                    errores_fila.append("PLATO_DESCONOCIDO")
+                    
+                # R2 y R3: Inyectar Motor Matemático
+                cantidad, err_cant = validar_cantidad(fila.get('cantidad', ''))
+                if err_cant: errores_fila.append(err_cant)
+                
+                fecha, err_fecha = validar_fecha(fila.get('fecha', ''))
+                if err_fecha: errores_fila.append(err_fecha)
+                
+                # R4: Precio distinto
+                try: precio_cobrado = int(fila.get('precio_unitario', 0))
+                except ValueError: precio_cobrado = 0
+                
+                # R6: Validar Pago
+                estado_pago, err_pago = evaluar_pago(fila.get('pagado', ''))
+                if err_pago:
+                    alertas.append({"linea": num_linea, "tipo": err_pago})
+                
+                if not errores_fila and precio_cobrado != precio_oficial:
+                    alertas.append({"linea": num_linea, "tipo": "PRECIO_DISTINTO"})
+
+                # R8: Válvula de decisión final
+                if errores_fila:
+                    resumen["filas_rechazadas"] += 1
+                    rechazos.append({"linea": num_linea, "motivos": errores_fila})
+                else:
+                    # Línea válida: Acumular totales
+                    resumen["filas_validas"] += 1
+                    monto_linea = cantidad * precio_cobrado
+                    resumen["total_vendido"] += monto_linea
+                    
+                    # Ventas por día
+                    ventas_dict[fecha] = ventas_dict.get(fecha, 0) + monto_linea
+                    
+                    # Totales por plato
+                    if nombre_oficial not in platos_dict:
+                        platos_dict[nombre_oficial] = {"plato": nombre_oficial, "unidades": 0, "total": 0}
+                    platos_dict[nombre_oficial]["unidades"] += cantidad
+                    platos_dict[nombre_oficial]["total"] += monto_linea
+                    
+                    # R7: Deuda por empresa
+                    empresa = fila.get('empresa', '').strip()
+                    if empresa and estado_pago == 'pendiente':
+                        deuda_dict[empresa] = deuda_dict.get(empresa, 0) + monto_linea
+                        
+        return resumen, ventas_dict, platos_dict, deuda_dict, rechazos, alertas
+        
+    except Exception as e:
+        logger.error(f"Error procesando pedidos: {e}")
+        sys.exit(1)
+
+def formatear_json(resumen, ventas_dict, platos_dict, deuda_dict, rechazos, alertas):
+    """
+    Ensambla el objeto JSON final respetando los ordenamientos exactos de Avostech.
+    """
+    ventas_por_dia = [{"fecha": k, "total": v} for k, v in ventas_dict.items()]
+    ventas_por_dia.sort(key=lambda x: x["fecha"])
+    
+    platos = list(platos_dict.values())
+    platos.sort(key=lambda x: x["total"], reverse=True)
+    
+    deuda_por_empresa = [{"empresa": k, "deuda": v} for k, v in deuda_dict.items() if v > 0]
+    deuda_por_empresa.sort(key=lambda x: x["deuda"], reverse=True)
+    
+    rechazos.sort(key=lambda x: x["linea"])
+    alertas.sort(key=lambda x: x["linea"])
+    
+    return {
+        "resumen": resumen,
+        "ventas_por_dia": ventas_por_dia,
+        "platos": platos,
+        "deuda_por_empresa": deuda_por_empresa,
+        "rechazos": rechazos,
+        "alertas": alertas
+    }
+
 def main():
+    sys.stdout.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description="ETL de Reporte Semanal - Doña Rosa")
     parser.add_argument("pedidos", help="Ruta al CSV de pedidos")
     parser.add_argument("catalogo", help="Ruta al CSV de catálogo")
     args = parser.parse_args()
 
     rutas = [Path(args.pedidos), Path(args.catalogo)]
-    
-    # 1. Validación de archivos
     validar_archivos(rutas)
     
-    # 2. Cargar Catálogo (Regla R1)
-    catalogo_dict = cargar_catalogo(rutas[1])
+    catalogo = cargar_catalogo(rutas[1])
     
-    # Salida temporal para probar el flujo de lectura
-    logger.info(f"Catálogo cargado con {len(catalogo_dict)} llaves (incluyendo alias).")
-    print(catalogo_dict)
+    resumen, ventas_dict, platos_dict, deuda_dict, rechazos, alertas = procesar_pedidos(rutas[0], catalogo)
+    
+    # Generar objeto final
+    reporte_final = formatear_json(resumen, ventas_dict, platos_dict, deuda_dict, rechazos, alertas)
+    
+    # Imprimir a stdout de forma segura delegando la codificación de caracteres a JSON
+    print(json.dumps(reporte_final, indent=2))
 
 if __name__ == "__main__":
     main()
