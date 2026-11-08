@@ -1,0 +1,90 @@
+{
+  "resumen": {
+    "filas_leidas": 16,
+    "filas_validas": 14,
+    "filas_rechazadas": 2,
+    "total_vendido": 158000
+  },
+  "ventas_por_dia": [
+    {
+      "fecha": "2026-11-02",
+      "total": 44000
+    },
+    {
+      "fecha": "2026-11-03",
+      "total": 23000
+    },
+    {
+      "fecha": "2026-11-04",
+      "total": 41000
+    },
+    {
+      "fecha": "2026-11-05",
+      "total": 27000
+    },
+    {
+      "fecha": "2026-11-06",
+      "total": 23000
+    }
+  ],
+  "platos": [
+    {
+      "plato": "Pastel de choclo",
+      "unidades": 9,
+      "total": 57500
+    },
+    {
+      "plato": "Cazuela",
+      "unidades": 9,
+      "total": 49500
+    },
+    {
+      "plato": "Lasaña",
+      "unidades": 6,
+      "total": 36000
+    },
+    {
+      "plato": "Ensalada César",
+      "unidades": 3,
+      "total": 15000
+    }
+  ],
+  "deuda_por_empresa": [
+    {
+      "empresa": "Constructora Sur",
+      "deuda": 47500
+    },
+    {
+      "empresa": "Estudio Contable Paz",
+      "deuda": 43500
+    }
+  ],
+  "rechazos": [
+    {
+      "linea": 9,
+      "motivos": [
+        "CANTIDAD_INVALIDA"
+      ]
+    },
+    {
+      "linea": 17,
+      "motivos": [
+        "DIA_NO_HABIL"
+      ]
+    }
+  ],
+  "alertas": [
+    {
+      "linea": 8,
+      "tipo": "POSIBLE_DUPLICADO"
+    },
+    {
+      "linea": 12,
+      "tipo": "PAGO_SIN_INFORMAR"
+    },
+    {
+      "linea": 13,
+      "tipo": "PRECIO_DISTINTO"
+    }
+  ]
+}
