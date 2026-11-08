@@ -167,24 +167,31 @@ def formatear_json(resumen, ventas_dict, platos_dict, deuda_dict, rechazos, aler
     }
 
 def main():
-    sys.stdout.reconfigure(encoding='utf-8')
     parser = argparse.ArgumentParser(description="ETL de Reporte Semanal - Doña Rosa")
     parser.add_argument("pedidos", help="Ruta al CSV de pedidos")
     parser.add_argument("catalogo", help="Ruta al CSV de catálogo")
+    parser.add_argument("salida", help="Ruta donde se guardará el JSON resultante")
     args = parser.parse_args()
 
-    rutas = [Path(args.pedidos), Path(args.catalogo)]
-    validar_archivos(rutas)
+    rutas_entrada = [Path(args.pedidos), Path(args.catalogo)]
+    validar_archivos(rutas_entrada)
     
-    catalogo = cargar_catalogo(rutas[1])
+    catalogo = cargar_catalogo(rutas_entrada[1])
     
-    resumen, ventas_dict, platos_dict, deuda_dict, rechazos, alertas = procesar_pedidos(rutas[0], catalogo)
-    
-    # Generar objeto final
+    resumen, ventas_dict, platos_dict, deuda_dict, rechazos, alertas = procesar_pedidos(rutas_entrada[0], catalogo)
     reporte_final = formatear_json(resumen, ventas_dict, platos_dict, deuda_dict, rechazos, alertas)
     
-    # Imprimir a stdout de forma segura delegando la codificación de caracteres a JSON
-    print(json.dumps(reporte_final, indent=2))
+    # Ruteo y escritura del archivo final
+    ruta_salida = Path(args.salida)
+    # Se asegura de crear la carpeta processed si no existe
+    ruta_salida.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Como escribimos el archivo internamente en UTF-8, usamos ensure_ascii=False
+    # para guardar la "ñ" original sin problemas de la terminal de Windows.
+    with open(ruta_salida, mode='w', encoding='utf-8') as archivo_salida:
+        json.dump(reporte_final, archivo_salida, indent=2, ensure_ascii=False)
+        
+    logger.info(f"Reporte generado exitosamente en: {ruta_salida}")
 
 if __name__ == "__main__":
     main()
