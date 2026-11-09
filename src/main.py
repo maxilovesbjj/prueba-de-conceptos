@@ -83,7 +83,7 @@ def procesar_pedidos(ruta_pedidos, catalogo):
                 filas_vistas.add(fila_str)
                 
                 # R1: Validar Plato
-                plato_crudo = fila.get('plato', '').strip().lower()
+                plato_crudo = (fila.get('plato') or '').strip().lower()
                 precio_oficial = 0
                 nombre_oficial = ""
                 if plato_crudo in catalogo:
@@ -131,7 +131,7 @@ def procesar_pedidos(ruta_pedidos, catalogo):
                     platos_dict[nombre_oficial]["total"] += monto_linea
                     
                     # R7: Deuda por empresa
-                    empresa = fila.get('empresa', '').strip()
+                    empresa = (fila.get('empresa') or '').strip()
                     if empresa and estado_pago == 'pendiente':
                         deuda_dict[empresa] = deuda_dict.get(empresa, 0) + monto_linea
                         
@@ -186,8 +186,9 @@ def main():
     # Se asegura de crear la carpeta processed si no existe
     ruta_salida.parent.mkdir(parents=True, exist_ok=True)
     
-    # Como escribimos el archivo internamente en UTF-8, usamos ensure_ascii=False
-    # para guardar la "ñ" original sin problemas de la terminal de Windows.
+    # Usamos ensure_ascii=False al escribir directamente el archivo en UTF-8
+    # para preservar la "ñ". Esto reemplaza el enfoque fallido de imprimir a stdout
+    # que corrompía caracteres en PowerShell.
     with open(ruta_salida, mode='w', encoding='utf-8') as archivo_salida:
         json.dump(reporte_final, archivo_salida, indent=2, ensure_ascii=False)
         
