@@ -3,7 +3,7 @@
     "filas_leidas": 16,
     "filas_validas": 14,
     "filas_rechazadas": 2,
-    "total_vendido": 158000
+    "total_vendido": 155800
   },
   "ventas_por_dia": [
     {
@@ -16,7 +16,7 @@
     },
     {
       "fecha": "2026-11-04",
-      "total": 41000
+      "total": 38800
     },
     {
       "fecha": "2026-11-05",
@@ -36,7 +36,7 @@
     {
       "plato": "Cazuela",
       "unidades": 9,
-      "total": 49500
+      "total": 47300
     },
     {
       "plato": "Lasaña",

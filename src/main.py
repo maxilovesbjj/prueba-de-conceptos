@@ -103,9 +103,14 @@ def procesar_pedidos(ruta_pedidos, catalogo):
                 fecha, err_fecha = validar_fecha(fila.get('fecha', ''))
                 if err_fecha: errores_fila.append(err_fecha)
                 
-                # R4: Precio distinto
-                try: precio_cobrado = int(fila.get('precio_unitario', 0))
-                except ValueError: precio_cobrado = 0
+                # R4: Precio distinto o inválido
+                precio_crudo = fila.get('precio_unitario', '0')
+                if precio_crudo is None: precio_crudo = '0'
+                try: 
+                    precio_cobrado = int(str(precio_crudo).strip())
+                except ValueError: 
+                    errores_fila.append("PRECIO_INVALIDO")
+                    precio_cobrado = 0
                 
                 # R6: Validar Pago
                 estado_pago, err_pago = evaluar_pago(fila.get('pagado', ''))
