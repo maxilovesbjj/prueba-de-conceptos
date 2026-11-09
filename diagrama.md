@@ -1,3 +1,4 @@
+```mermaid
 graph TD
     A[Leer fila de pedidos.csv] --> B{¿Fila idéntica a una anterior? - R5}
     
@@ -42,3 +43,4 @@ graph TD
     O --> P
     
     P --> Q[Fin archivo: Ordenar JSON y exportar]
+    ```
