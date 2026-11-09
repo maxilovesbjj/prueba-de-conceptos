@@ -25,3 +25,7 @@ Se decidió estrictamente sumar los montos de filas duplicadas a los totales y d
 ### 6. Implementación de Descuento Corporativo (Regla R9 / Parte 3)
 **Decisión:** Se refactorizó la función `procesar_pedidos` pasando de un modelo "Stream" (sumar al instante) a un modelo de "Agrupación en Memoria" (Sala de Espera).
 **Por qué:** Para calcular si una empresa alcanza los 4 platos diarios, es imposible aplicar el cobro al leer la primera línea de la mañana. Ahora, las filas válidas se guardan en la memoria temporal `filas_validas_memoria`. Una vez que el archivo termina de leerse, se verifica el acumulador diario por empresa, se aplica el 10% si corresponde, y se consolida financieramente.
+
+### Separación de Responsabilidades (Análisis vs ETL)
+**Decisión:** Crear un script independiente (`src/analisis.py`) para generar las visualizaciones de negocio de la Parte 4, en lugar de integrarlo al pipeline principal (`src/main.py`).
+**Por qué:** Principio de Responsabilidad Única (SRP). El objetivo del ETL es extraer, transformar y cargar datos transaccionales de forma rápida y ligera. Agregar dependencias pesadas como `matplotlib` al flujo principal rompería este propósito. Al aislar el análisis, mantenemos el ETL optimizado y demostramos flexibilidad para consumir el `reporte.json` desde sistemas externos.
