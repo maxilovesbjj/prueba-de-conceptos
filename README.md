@@ -10,6 +10,7 @@ El ETL utiliza una arquitectura `data/raw/` para insumos y `data/processed/` par
 
 ```bash
 python src/main.py data/raw/pedidos.csv data/raw/catalogo.csv data/processed/reporte.json
+```
 
 ## Parte 1 - Análisis del problema
 
