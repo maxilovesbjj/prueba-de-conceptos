@@ -21,3 +21,7 @@
 * **Concepto "Sin Empresa" (Regla R7):** Se asume que un pedido "sin empresa" corresponde a un campo completamente vacío (`""`) o que contiene únicamente espacios en blanco (`"   "`). Ambos casos se normalizarán y excluirán del cálculo de deuda.
 ### 5. Manejo de Duplicados (R5)
 Se decidió estrictamente sumar los montos de filas duplicadas a los totales y deudas, levantando únicamente la alerta. Aunque un auditor externo podría sugerir excluir los duplicados, el requerimiento de Avostech indica explícitamente "se cuenta igual (no sabemos si es error)".
+
+### 6. Implementación de Descuento Corporativo (Regla R9 / Parte 3)
+**Decisión:** Se refactorizó la función `procesar_pedidos` pasando de un modelo "Stream" (sumar al instante) a un modelo de "Agrupación en Memoria" (Sala de Espera).
+**Por qué:** Para calcular si una empresa alcanza los 4 platos diarios, es imposible aplicar el cobro al leer la primera línea de la mañana. Ahora, las filas válidas se guardan en la memoria temporal `filas_validas_memoria`. Una vez que el archivo termina de leerse, se verifica el acumulador diario por empresa, se aplica el 10% si corresponde, y se consolida financieramente.

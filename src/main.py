@@ -53,7 +53,7 @@ def cargar_catalogo(ruta_catalogo):
 def procesar_pedidos(ruta_pedidos, catalogo):
     """
     Pipeline secuencial que evalúa R2-R8 acumulando errores.
-    Calcula resúmenes, ventas diarias, platos y deuda.
+    Implementa R9: Agrupa pedidos válidos y aplica 10% de descuento a empresas con >=4 almuerzos diarios.
     """
     resumen = {"filas_leidas": 0, "filas_validas": 0, "filas_rechazadas": 0, "total_vendido": 0}
     ventas_dict = {}
@@ -62,6 +62,10 @@ def procesar_pedidos(ruta_pedidos, catalogo):
     rechazos = []
     alertas = []
     filas_vistas = set() 
+    
+    # NUEVO: Estructuras en memoria para la Parte 3 (Regla R9)
+    filas_validas_memoria = []
+    conteo_diario_empresas = {} # Llave: (fecha, empresa), Valor: suma de unidades
     
     try:
         with open(ruta_pedidos, mode='r', encoding='utf-8') as archivo:
@@ -116,31 +120,55 @@ def procesar_pedidos(ruta_pedidos, catalogo):
                     resumen["filas_rechazadas"] += 1
                     rechazos.append({"linea": num_linea, "motivos": errores_fila})
                 else:
-                    # Línea válida: Acumular totales
+                    # NUEVO: Si es válida, contamos los almuerzos corporativos y enviamos a la sala de espera
                     resumen["filas_validas"] += 1
-                    monto_linea = cantidad * precio_cobrado
-                    resumen["total_vendido"] += monto_linea
-                    
-                    # Ventas por día
-                    ventas_dict[fecha] = ventas_dict.get(fecha, 0) + monto_linea
-                    
-                    # Totales por plato
-                    if nombre_oficial not in platos_dict:
-                        platos_dict[nombre_oficial] = {"plato": nombre_oficial, "unidades": 0, "total": 0}
-                    platos_dict[nombre_oficial]["unidades"] += cantidad
-                    platos_dict[nombre_oficial]["total"] += monto_linea
-                    
-                    # R7: Deuda por empresa
                     empresa = (fila.get('empresa') or '').strip()
-                    if empresa and estado_pago == 'pendiente':
-                        deuda_dict[empresa] = deuda_dict.get(empresa, 0) + monto_linea
+                    
+                    if empresa:
+                        llave_agrupacion = (fecha, empresa)
+                        conteo_diario_empresas[llave_agrupacion] = conteo_diario_empresas.get(llave_agrupacion, 0) + cantidad
                         
+                    filas_validas_memoria.append({
+                        "fecha": fecha,
+                        "empresa": empresa,
+                        "nombre_oficial": nombre_oficial,
+                        "cantidad": cantidad,
+                        "precio_cobrado": precio_cobrado,
+                        "estado_pago": estado_pago
+                    })
+                    
+        # NUEVO: --- FASE DE LIQUIDACIÓN FINANCIERA (R9) ---
+        # Recorremos la sala de espera ahora que ya sabemos el total diario de cada empresa
+        for item in filas_validas_memoria:
+            precio_final = item["precio_cobrado"]
+            
+            # Evaluar R9: Descuento corporativo por volumen
+            if item["empresa"]:
+                llave = (item["fecha"], item["empresa"])
+                if conteo_diario_empresas.get(llave, 0) >= 4:
+                    # 10% de descuento redondeado al peso
+                    precio_final = round(precio_final * 0.9)
+            
+            monto_linea = item["cantidad"] * precio_final
+            
+            # Sumas financieras globales (impactadas por el descuento si aplicó)
+            resumen["total_vendido"] += monto_linea
+            ventas_dict[item["fecha"]] = ventas_dict.get(item["fecha"], 0) + monto_linea
+            
+            if item["nombre_oficial"] not in platos_dict:
+                platos_dict[item["nombre_oficial"]] = {"plato": item["nombre_oficial"], "unidades": 0, "total": 0}
+            platos_dict[item["nombre_oficial"]]["unidades"] += item["cantidad"]
+            platos_dict[item["nombre_oficial"]]["total"] += monto_linea
+            
+            # R7: Deuda por empresa
+            if item["empresa"] and item["estado_pago"] == 'pendiente':
+                deuda_dict[item["empresa"]] = deuda_dict.get(item["empresa"], 0) + monto_linea
+
         return resumen, ventas_dict, platos_dict, deuda_dict, rechazos, alertas
         
     except Exception as e:
         logger.error(f"Error procesando pedidos: {e}")
         sys.exit(1)
-
 def formatear_json(resumen, ventas_dict, platos_dict, deuda_dict, rechazos, alertas):
     """
     Ensambla el objeto JSON final respetando los ordenamientos exactos de Avostech.
