@@ -1,23 +1,24 @@
+import pytest
 from src.rules import validar_cantidad, validar_fecha, evaluar_pago
 
-def test_r2_cantidad():
-    # Caso feliz
-    assert validar_cantidad("2") == (2, None)
-    # Rechazos
+def test_validar_cantidad():
+    assert validar_cantidad("3") == (3, None)
     assert validar_cantidad("0") == (0, "CANTIDAD_INVALIDA")
-    assert validar_cantidad("-5") == (0, "CANTIDAD_INVALIDA")
-    assert validar_cantidad("texto") == (0, "CANTIDAD_INVALIDA")
+    assert validar_cantidad("-1") == (0, "CANTIDAD_INVALIDA")
+    assert validar_cantidad("abc") == (0, "CANTIDAD_INVALIDA")
+    assert validar_cantidad(None) == (0, "CANTIDAD_INVALIDA")
 
-def test_r3_fecha():
-    # Caso feliz (Miércoles)
+def test_validar_fecha():
     assert validar_fecha("2026-11-04") == ("2026-11-04", None)
-    # Fin de semana (Sábado)
     assert validar_fecha("2026-11-07") == ("2026-11-07", "DIA_NO_HABIL")
-    # Formato inválido
-    assert validar_fecha("04-11-2026")[1] == "FECHA_INVALIDA"
+    assert validar_fecha("fecha-invalida") == ("fecha-invalida", "FECHA_INVALIDA")
+    assert validar_fecha(None) == ("", "FECHA_INVALIDA")
+    assert validar_fecha("   ") == ("", "FECHA_INVALIDA")
 
-def test_r6_pago():
+def test_evaluar_pago():
+    assert evaluar_pago("SI") == ("pagado", None)
     assert evaluar_pago("si") == ("pagado", None)
+    assert evaluar_pago("NO") == ("pendiente", None)
     assert evaluar_pago("no") == ("pendiente", None)
-    # Vacío genera alerta
-    assert evaluar_pago("") == ("pendiente", "PAGO_SIN_INFORMAR")
+    assert evaluar_pago("otro") == ("pendiente", "PAGO_SIN_INFORMAR")
+    assert evaluar_pago(None) == ("pendiente", "PAGO_SIN_INFORMAR")

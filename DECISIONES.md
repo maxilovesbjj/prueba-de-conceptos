@@ -29,3 +29,6 @@ Se decidió estrictamente sumar los montos de filas duplicadas a los totales y d
 ### Separación de Responsabilidades (Análisis vs ETL)
 **Decisión:** Crear un script independiente (`src/analisis.py`) para generar las visualizaciones de negocio de la Parte 4, en lugar de integrarlo al pipeline principal (`src/main.py`).
 **Por qué:** Principio de Responsabilidad Única (SRP). El objetivo del ETL es extraer, transformar y cargar datos transaccionales de forma rápida y ligera. Agregar dependencias pesadas como `matplotlib` al flujo principal rompería este propósito. Al aislar el análisis, mantenemos el ETL optimizado y demostramos flexibilidad para consumir el `reporte.json` desde sistemas externos.
+### Manejo de Precios Inválidos (R4 extendida)
+**Decisión:** Si el campo `precio_unitario` no puede ser parseado a entero (por ejemplo, strings alfanuméricos como "abc"), la fila se descarta con el motivo `PRECIO_INVALIDO`. 
+**Por qué:** A diferencia de una discrepancia de tarifa con el catálogo (que se tolera como alerta de auditoría), un precio no numérico representa corrupción de datos crítica que imposibilita el cálculo financiero.
