@@ -19,3 +19,5 @@
 * **Codificación y Delimitadores:** Se asume que los archivos `.csv` vendrán codificados en UTF-8 y separados estrictamente por comas (`,`). Esto evita fallos de parseo con caracteres especiales (ej. "Lasaña").
 * **Catálogo (Regla R1):** Se asume que `catalogo.csv` siempre tendrá datos válidos en su estructura base. Se cargará en memoria como un Hash Map (diccionario) para lograr tiempos de acceso $O(1)$ en la validación de alias. Si un plato no tiene alias, el campo puede venir vacío.
 * **Concepto "Sin Empresa" (Regla R7):** Se asume que un pedido "sin empresa" corresponde a un campo completamente vacío (`""`) o que contiene únicamente espacios en blanco (`"   "`). Ambos casos se normalizarán y excluirán del cálculo de deuda.
+### 5. Manejo de Duplicados (R5)
+Se decidió estrictamente sumar los montos de filas duplicadas a los totales y deudas, levantando únicamente la alerta. Aunque un auditor externo podría sugerir excluir los duplicados, el requerimiento de Avostech indica explícitamente "se cuenta igual (no sabemos si es error)".
