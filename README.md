@@ -11,6 +11,12 @@ El ETL utiliza una arquitectura `data/raw/` para insumos y `data/processed/` par
 ```bash
 python src/main.py data/raw/pedidos.csv data/raw/catalogo.csv data/processed/reporte.json
 ```
+### Correr los Tests (TDD)
+Se implementó `pytest` para validar las reglas de negocio aisladas.
+```bash
+python -m pytest tests/
+```
+
 
 ## Parte 1 - Análisis del problema
 
@@ -77,3 +83,33 @@ Considerando que Rosa tiene presupuesto limitado y nula experiencia tecnológica
 
 3. **Trazabilidad Financiera (El script ETL):** 
    Entrega del programa CLI desarrollado en esta prueba. Rosa seguirá usando su cuaderno y su planilla habitual sin fricción. Al final del día, el script procesará la planilla, filtrará los errores humanos de digitación y le entregará un reporte limpio y automatizado de la deuda B2B, eliminando su inseguridad al cobrar.
+
+
+## Parte 4 - Preguntas de Diseño
+
+### 1. Proyección de Demanda (Forecasting del Lunes)
+Para calcular cuántos almuerzos preparar el próximo lunes, utilizaría un modelo de series de tiempo simple (como medias móviles) basado en el comportamiento histórico específico de los días lunes, ya que la demanda en rubros alimenticios tiene alta estacionalidad intra-semanal. 
+**Datos faltantes:** 
+Actualmente solo tenemos una semana de muestra (2 al 6 de noviembre). Para una proyección estadísticamente válida necesito:
+- Historial de al menos 4 a 8 semanas hacia atrás para calcular promedios fiables.
+- Tasa histórica de "No Show" o cancelaciones de último minuto.
+- Variables exógenas simples (ej. estado del clima).
+
+### 2. Análisis del Negocio (Insights de los Datos)
+Para responder esta pregunta, desarrollé el script adicional `src/analisis.py` que consume el JSON y genera gráficos analíticos. Los hallazgos principales son:
+
+- **Ley de Pareto en el Menú:** El Pastel de choclo y la Cazuela sostienen el negocio. La Ensalada César tiene una rotación bajísima (3 unidades). Sugiero eliminarla del catálogo para simplificar la logística y reducir la merma de vegetales frescos.
+
+![Distribución de Platos](data/processed/distribucion_platos.png)
+
+- **Concentración de Riesgo B2B y Volatilidad:** El JSON arroja $91.000 pesos en deuda no saldada en una sola semana. Rosa está operando como prestamista a tasa cero para corporaciones, asumiendo un riesgo de liquidez crítico. Además, los ingresos diarios muestran una alta volatilidad, lo que dificulta la planificación de compras.
+
+![Tendencia de Ventas](data/processed/tendencia_ventas.png)
+
+### 3. Impacto Arquitectónico de un Formulario Web
+Si Rosa cambia WhatsApp por un formulario web (Typeform, Google Forms, App interna), el impacto en nuestro programa demuestra los beneficios de haber aislado la lógica:
+- **Lo que CAMBIA (Capa de Extracción):** La función `procesar_pedidos` y la dependencia de `csv.DictReader`. En lugar de leer un archivo plano ruidoso, consumiríamos un JSON estructurado desde una API o base de datos.
+- **Lo que NO CAMBIA (Capa de Transformación y Carga):** El motor de reglas (`src/rules.py`) se mantiene intacto. Las validaciones de fechas hábiles, cantidades mínimas, el catálogo de precios y la lógica de agrupación en memoria para el descuento corporativo seguirían funcionando exactamente igual, demostrando una arquitectura desacoplada y escalable.
+
+### 4. Escala de los Datos vs. Realidad Operativa
+Noté una discrepancia evidente: el caso indica que la capacidad de planta de Rosa es de 80 a 120 almuerzos diarios, pero el archivo `pedidos.csv` refleja apenas 27 unidades válidas en toda la semana. Abordé este CSV como un *toy dataset* diseñado exclusivamente para probar la lógica de las reglas R1-R9 y forzar los casos borde. No obstante, la arquitectura del ETL (lectura secuencial y agrupación temporal en memoria) está diseñada para soportar el caudal real de 120+ platos diarios sin degradación de rendimiento.
