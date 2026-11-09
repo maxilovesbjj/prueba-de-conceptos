@@ -1,6 +1,16 @@
 # Sistema ETL - Cocina Doña Rosa
 Repositorio para la prueba técnica de Avostech.
 
+## Instalación y Ejecución
+
+El proyecto utiliza Python estándar sin dependencias externas pesadas para el pipeline. 
+
+### Ejecutar el reporte
+El ETL utiliza una arquitectura `data/raw/` para insumos y `data/processed/` para salidas. Para ejecutarlo:
+
+```bash
+python src/main.py data/raw/pedidos.csv data/raw/catalogo.csv data/processed/reporte.json
+
 ## Parte 1 - Análisis del problema
 
 ### 1. Problemas de fondo vs. Síntomas
